@@ -17,9 +17,9 @@ setup(
         "psutil",
         "aiofiles",
         "beautifulsoup4",
-        "canvasvg",
-        "tdqm",
-        "matplotlib"
+        "matplotlib",
+        "jupyter",
+        "nbconvert",
     ],
     
 )

@@ -55,14 +55,16 @@ clean:
 	rm -rf *.dSYM *.exe gv *.zip.* 
 
 install:
-	pip3 install --break-system-packages -e ./stdtestcl
+	python3 -m venv .venv
+	source .venv/bin/activate; pip3 install -e ./stdtestcl; 
 
 gitpush:
 	rm -rf *.dSYM *.exe gv *.zip.* 
 	task --work 0
 	# git remote add origin git@github.com:hack1nt0/cppcode.git
 	# git branch -M main
-	# TODO convert ipynb to markdown
+	# convert ipynb to markdown
+	source .venv/bin/activate; jupyter nbconvert --to markdown readme.ipynb; 
 	git add .
 	git commit -m "`date`"
 	git push -u origin main
