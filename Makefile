@@ -56,14 +56,14 @@ edit:
 	code .
 
 clean:
-	rm -rf *.dSYM *.exe gv *.zip.* 
+	rm -rf *.dSYM *.exe gv *.zip.* out-*
 
 install:
 	python3 -m venv .venv
 	source .venv/bin/activate; pip3 install -e ./stdtestcl; 
 
 gitpush:
-	rm -rf *.dSYM *.exe gv *.zip.* 
+	rm -rf *.dSYM *.exe gv *.zip.* out-*
 	task --work 0
 	# git remote add origin git@github.com:hack1nt0/cppcode.git
 	# git branch -M main

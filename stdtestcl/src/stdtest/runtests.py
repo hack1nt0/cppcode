@@ -26,6 +26,7 @@ from .taskcrud2 import getlocaltaskmeta, db, getfiles
 SOL_CMD = "make runsol"
 GEN_CMD = "make rungen"
 CMP_CMD = "make runcmp"
+CHK_CMD = "make runchk"
 
 def comptokens(actuals: list[str], answers: list[str]):
     import itertools
@@ -76,10 +77,10 @@ def wait(p: Popen):
 
 def test_compare(compare=True):
     # logger.clear()
-    if compare:
-        logger.info("compare mode...".upper())
-    else:
-        logger.info("brutefoce-test mode...".upper())
+    # if compare:
+    #     logger.info("compare mode...".upper())
+    # else:
+    #     logger.info("brutefoce-test mode...".upper())
     dat = getlocaltaskmeta()
     # sol = dat['sol']
     # assert sol and os.path.exists(sol), "Solver not exists!"
@@ -94,10 +95,11 @@ def test_compare(compare=True):
     # genruncmd = compilefile(gen)
     # if compare: cmpruncmd = compilefile(cmp)
     
-    TESTID = len(dat['tests'])+1
-    GENOUT = f"in-{TESTID}"
-    SOLOUT = "sol.out"
-    CMPOUT = f"ou-{TESTID}"
+    TESTID = len(glob.glob('in-*'))+1
+    FAILED = f"in-{TESTID}"
+    GENOUT = "out-gen"
+    SOLOUT = "out-sol"
+    CMPOUT = "out-cmp"
     for testId in range(1, 101):
         logger.settestid(testId)
         passed = True
@@ -150,15 +152,14 @@ def test_compare(compare=True):
                 cpulimit=cpulimit,
                 memlimit=memlimit,
             )
-            os.remove(SOLOUT)
             if not passed:
                 # os.remove(FAILED)
                 # newtest(FAILED)
-                logger.conclusion(f"Failed test #{testId} have been saved as `{GENOUT}/{CMPOUT}`.")
+                with open(FAILED, 'w+') as w:
+                    w.write(open(GENOUT).read())
+                    w.write(open(CMPOUT).read())
+                logger.conclusion(f"Failed test #{testId} have been saved as `{FAILED}`.")
                 return 1
-            else:
-                os.remove(GENOUT)
-                os.remove(CMPOUT)
         else:
             passed = logger.verdict(
                 actual=SOLOUT,
@@ -169,18 +170,16 @@ def test_compare(compare=True):
                 cpulimit=cpulimit,
                 memlimit=memlimit,
             )
-            os.remove(SOLOUT)
             if not passed:
                 # newtest(GENOUT)
-                logger.conclusion(f"Failed test #{testId} have been saved as `{GENOUT}`.")
+                with open(FAILED, 'w+') as w:
+                    w.write(open(GENOUT).read())
+                logger.conclusion(f"Failed test #{testId} have been saved as `{FAILED}`.")
                 c = input("Continue? [Y|n]: ")
                 if c != 'n':
                     continue
                 else:
                     return 1
-            else:
-                os.remove(GENOUT)
-
     print()
     logger.conclusion("All 100 tests passed.")
     return 0
@@ -189,12 +188,8 @@ def test_compare(compare=True):
 def test_interact():
     # logger.clear()
     dat = getlocaltaskmeta()
-    sol = dat['sol']
-    chk = dat['chk']
     cpulimit = dat['timeLimit']
     memlimit = dat['memoryLimit']
-    solruncmd = f"/usr/bin/time -al {compilefile(sol)}"
-    chkruncmd = compilefile(chk)
     BPS = 1024
     from typing import Callable
     async def flow(
@@ -242,30 +237,30 @@ def test_interact():
         testId += 1
         logger.settestid(testId)
         logger.header("Chat")
-        infoExtractor = MetricExtractor()
         psol = Popen(
-            solruncmd,
+            SOL_CMD,
             shell=True,
             stdin=PIPE,
             stdout=PIPE,
-            stderr=infoExtractor,
+            stderr=PIPE,
+            text=True,
         )
         pchk = Popen(
-            chkruncmd,
+            CHK_CMD,
             shell=True,
             stdin=PIPE,
             stdout=PIPE,
             stderr=sys.stderr,
         )
         def sol2chk(cs):
-            print("SOL --> CHK:", cs)
+            print("SOL --> CHK:", cs, end='')
         def chk2sol(cs):
-            print("SOL <-- CHK:", cs)
+            print("SOL <-- CHK:", cs, end='')
         run_graph(
             flow(psol.stdout, [pchk.stdin], sol2chk),
             flow(pchk.stdout, [psol.stdin], chk2sol),
         )
-        infoExtractor.close()
+        infoExtractor = InfoExtractor().run(psol.stderr)
         passed = logger.verdict(
             interactive=True,
             scode=psol.wait(),
