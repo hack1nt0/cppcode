@@ -130,9 +130,9 @@ def archivetask():
         logger.error("No working task to arxiv...".upper())
         return
     id = dat['id']
-    if id == 0:
-        logger.error("task of id ZERO cannot be archived...".upper())
-        return
+    # if id == 0:
+    #     logger.error("task of id ZERO cannot be archived...".upper())
+    #     return
     filesmap = {}
     for filekeeped in getfiles(dat):
         filesmap[filekeeped] = open(filekeeped).read()

@@ -10,6 +10,9 @@ class Database:
         self.con = sqlite3.connect(DB)
         self.ptr = self.con.cursor()
         self.ptr.executescript(open(SQL).read())
+        # self.inserttask0()
+
+    def inserttask0(self):
         self.ptr.executemany(
             "insert or replace into task2(id,fullname,dat,ctime,mtime,`status`) values (?,?,?,?,?,?)",
             [
@@ -25,7 +28,7 @@ class Database:
                         "memoryLimit": 256,
                         "timeLimit": 500,
                         "files": {
-                            "in-1": "1 2",
+                            "in-1": "1 2 3",
                             "sol.cpp": r"""#include "include/libs"
 int main() {
     int x, y; cin >> x >> y;
@@ -67,7 +70,6 @@ int main() {
             ]
         )
         self.con.commit()
-    
     
     def select(self, sql, params=()):
         if type(params) is tuple:
