@@ -29,6 +29,7 @@ import sqlite3
 from .db.db import Database
 from .logger import logger
 
+DB = 'task.db'
 TBL = 'task2'
 META = "task.json"
 db = Database()
@@ -41,7 +42,7 @@ def getlocaltaskmeta() -> dict:
 
 def getfiles(dat) -> list:
     filewildcards = dat['files']
-    return (x for fkey in filewildcards for x in glob.glob(fkey) if os.path.isfile(x))
+    return (x for fkey in filewildcards for x in glob.glob(fkey) if os.path.isfile(x) and x != DB)
 
 def getfullname(dat) -> str:
     return str((dat['name'], dat['group']))
@@ -145,7 +146,6 @@ def archivetask():
     try:
         for f in getfiles(dat):
             os.remove(f)
-        os.remove(META)
     except:
         pass
     
@@ -163,6 +163,7 @@ def deletetask():
     for f in getfiles(dat):
         os.remove(f)
     print(f"Sucessfully removed task '{getfullname(dat)}' from arxiv.")
+    worktask(0)
 
 
 def task2task2():
