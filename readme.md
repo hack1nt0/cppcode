@@ -1,37 +1,3 @@
-```python
-%%html
-<style>
-th {
-background-color:#55FF33;
-}
-td {
-background-color:#00AAFF;
-}
-table, th, td {
-    border:1px solid black;
-        text-align: center; 
-    vertical-align: middle;
-}
-</style>
-```
-
-
-<style>
-th {
-background-color:#55FF33;
-}
-td {
-background-color:#00AAFF;
-}
-table, th, td {
-    border:1px solid black;
-        text-align: center; 
-    vertical-align: middle;
-}
-</style>
-
-
-
 ## Task E. No Palindromes
 case analysis.
 
@@ -47,14 +13,6 @@ case analysis.
     <tr><td>2</td><td>YES</td></tr>
 </table>
 
-
-
-```python
-
-```
-
-### Ts
-sksh
 
 
 ```python
