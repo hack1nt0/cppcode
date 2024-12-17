@@ -1,0 +1,16 @@
+{
+    "id": 0,
+    "name": "test",
+    "group": "",
+    "url": "",
+    "interactive": false,
+    "memoryLimit": 256,
+    "timeLimit": 500,
+    "files": [
+        "in-1",
+        "sol.cpp",
+        "gen.py",
+        "cmp.cpp",
+        "chk.cpp"
+    ]
+}

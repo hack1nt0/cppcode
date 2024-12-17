@@ -1,0 +1,87 @@
+
+#include "include/libs"
+
+struct Set {
+    array<set<int>, 3> arr;
+    
+    int size() { int r = 0; for (auto& x: arr) r += x.size(); return r; }
+    void addcnt(int v) {
+        assert(!arr[2].count(v));
+        if (arr[1].count(v)) {
+            arr[1].erase(v);
+            arr[2].insert(v);
+        } else {
+            arr[1].insert(v);
+        }
+    }
+    void join(const Set& o) {
+        for (auto x: o.arr[2]) arr[2].insert(x);
+        for (auto x: o.arr[1]) addcnt(x);
+    }
+    int getmin(int n) {
+        if (size() < n) return 0;
+        if (arr[1].size()) return 1;
+        return 2;
+    }
+    int getmax() {
+        if (arr[2].size()) return 2;
+        if (arr[1].size()) return 1;
+        return 0;
+    }
+};
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(&cout);
+    int n; cin >> n;
+    vector<int> a(n * 2);
+    for (auto& x: a) cin >> x, --x;
+    vector<vector<int>> adj(n * 2);
+    for (int i = 0; i < n * 2 - 1; ++i) {
+        int u, v;
+        cin >> u >> v;
+        u--, v--;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+
+    vector<int> comp;
+    function<void(int,int)> getcomp = [&](int x, int fa) {
+        comp.push_back(x);
+        for (auto y: adj[x]) if (y != fa) getcomp(y, x);
+    };
+
+    vector<Set> st(n * 2);
+    vector<int> maxvid(n * 2);
+    function<bool(int,int)> dfs = [&](int x, int fa) {
+        maxvid[x] = x;
+        for (auto y: adj[x]) if (y != fa) {
+            if (dfs(y, x)) return true;
+            if (st[y].size() > st[x].size()) swap(st[x], st[y]);
+            st[x].join(st[y]);
+            maxvid[x] = max(x, maxvid[y]);
+        }
+        
+        st[x].addcnt(a[x]);
+        
+        int mincnt = st[x].getmin(n);
+        int maxcnt = st[x].getmax();
+        if (mincnt == 1 && maxcnt == 1) {
+            if (maxvid[x] < n * 2 - 1) getcomp(x, fa);
+            else getcomp(fa, x);
+            return true;
+        }
+        if (mincnt == 1 && maxcnt == 2) {
+            getcomp(x, fa);
+            return true;
+        }
+        return false;
+    };
+
+    assert(dfs(0, -1));
+
+    cout << comp.size() << "\n";
+    sort(comp.begin(), comp.end());
+    for (auto x: comp) cout << x + 1 << " ";
+    return 0;
+}

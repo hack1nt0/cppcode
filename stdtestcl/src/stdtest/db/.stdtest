@@ -1,0 +1,42 @@
+[prefer]
+solver="sol.cpp"
+generator="gen.py"
+comparator="stupid.cpp"
+checker="check.cpp"
+ichecker="icheck.cpp"
+inputs="inputs"
+answers="answers"
+batch=100
+bps=1024
+cpulimit=1
+memlimit=128
+
+[lang.cpp]
+name="C++"
+includepath="/Users/dy/gits/cc/include"
+build= "c++ -std=c++2b -I{includepath} -g -Wall -Wfatal-errors -DDEBUG -fsanitize=address -fsanitize=undefined -o {output} {input}"
+#build= "c++ -std=c++2b -I{includepath} -Wall -Wfatal-errors -DDEBUG -O2 -o {output} {input}"
+template= '''
+#include "libs"
+
+void solve(int it) {
+}
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(&cout);
+    int T; cin >> T;
+    for (int i = 1; i <= T; ++i) solve(i);
+    return 0;
+}
+'''
+
+[lang.py]
+name= "Python"
+run= "python3 -Xfrozen_modules=off {}"
+template='''
+import random as R
+# with replace
+# wout replace
+'''
+
