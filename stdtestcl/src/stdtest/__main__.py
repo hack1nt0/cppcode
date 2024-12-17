@@ -77,11 +77,7 @@ def main():
                     return listentask()
                 else: continue
         elif args.list:
-            DEFAULTSQL = "select id from task order by ctime desc limit 11"
-            sql = input(f"input sql to query task table, [{DEFAULTSQL}]: ".upper())
-            if not sql:
-                sql = DEFAULTSQL
-            printtask(db.select(sql))
+            printtask(db.select("select id from task order by ctime"))
             while True:
                 id = input('work task of id: ')
                 try:
