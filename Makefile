@@ -59,5 +59,5 @@ gitpush:
 	# git branch -M main
 	# TODO convert ipynb to markdown
 	git add .
-	git commit -m '`date`'
+	git commit -m "`date`"
 	git push -u origin main
