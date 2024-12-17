@@ -15,6 +15,7 @@ def main():
         p.add_argument("--new", help="new task(s)", action="store_true")
         p.add_argument("--list", help="list tasks", action="store_true")
         p.add_argument("--work", help="work task by specify id", type=int, default=-1)
+        p.add_argument("--currenttask", help="show task info", action="store_true")
         # p.add_argument("-nl", dest="listen", help="listen", action="store_true")
         # p.add_argument("-n", dest="create", help="new task: group/name, default group: test", type=str)
         # p.add_argument("-nt", dest="newtest", help="add new test from file, seperate input/answer by blank line(s)", type=str)
@@ -88,6 +89,8 @@ def main():
                 except Exception as e:
                     print(e)
                     continue
+        elif args.currenttask:
+            printtask([(getlocaltaskmeta()['id'],)])
         elif args.work >= 0:
             return worktask(int(args.work))
         # elif args.test:

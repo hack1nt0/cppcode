@@ -45,12 +45,17 @@ list:
 new:
 	task --new
 
+show:
+	task --currenttask
+
+edit:
+	code .
+
 clean:
 	rm -rf *.dSYM *.exe gv *.zip.* 
 
 install:
 	pip3 install --break-system-packages -e ./stdtestcl
-
 
 gitpush:
 	rm -rf *.dSYM *.exe gv *.zip.* 

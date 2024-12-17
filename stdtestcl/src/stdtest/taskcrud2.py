@@ -59,9 +59,11 @@ def printtask(taskids):
     print(FORMATSTR % headers)
     for status, ID, fullname, ctime in tasks:
         if status == 1: #solved
-            print(f'\033[48;5;{46}m', end='')
+            print(f'\033[48;2;0;255;0m', end='')
         elif status == 2: #unsolved
-            print(f'\033[48;5;{196}m', end='')
+            print(f'\033[48;2;255;0;0m', end='')
+        elif status == 3:
+            print(f'\033[48;2;0;0;255m', end='')
         print(FORMATSTR % (
             str(ID),
             textwrap.shorten(fullname, W, tabsize=4),
@@ -139,8 +141,14 @@ def archivetask():
         filesmap[filekeeped] = open(filekeeped).read()
     dat['files'] = filesmap
     mtime = int(time.time())
-    db.execute(f"update task2 set fullname=?, dat=?, mtime=? where id=?",
-               (getfullname(dat), json.dumps(dat, indent=4).encode(), mtime, id)
+    oldstatus = db.select(f"select `status` from {TBL} where id=?", (id,))[0][0]
+    if not oldstatus: oldstatus = 0
+    newstatus = input(f"input pre status [0: untried, 1: solved, 2: unsolved, 3: marked, default is {oldstatus}]: ".upper())
+    if not newstatus: newstatus = oldstatus
+    newstatus = int(newstatus)
+    assert 0 <= newstatus <= 3
+    db.execute(f"update task2 set fullname=?, dat=?, mtime=?, `status`=? where id=?",
+               (getfullname(dat), json.dumps(dat, indent=4).encode(), mtime, newstatus, id)
     )
     print(f"Sucessfully uploaded task '{getfullname(dat)}' to arxiv, congrats!".upper())
     try:
