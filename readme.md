@@ -14,7 +14,5 @@ case analysis.
 </table>
 
 
-
-```python
-
-```
+![alt text](data/Tree.gv.png "PNG")
+![alt text](data/Tree.gv.svg "SVG")

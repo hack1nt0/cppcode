@@ -20,6 +20,7 @@ setup(
         "matplotlib",
         "jupyter",
         "nbconvert",
+        "graphviz",
     ],
     
 )

@@ -4,6 +4,7 @@ SOL = sol.cpp.exe
 GEN = gen.py
 CMP = cmp.cpp.exe
 CHK = chk.cpp.exe
+VIS = vis.py
 
 %.cpp.exe: %.cpp $(wildcard include/*)
 	c++ -std=c++2b -g -Wall -Wfatal-errors -DDEBUG -fsanitize=address -fsanitize=undefined -o $@ $<
@@ -23,6 +24,9 @@ runcmp: $(CMP)
 
 runchk: $(CHK)
 	@./$(CHK)
+
+runvis:
+	source .venv/bin/activate; python3 $(VIS);
 
 tst: $(SOL) $(wildcard in-*)
 	task --runtests
