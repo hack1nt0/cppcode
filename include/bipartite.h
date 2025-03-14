@@ -9,21 +9,22 @@ struct Bipartite {
     vector<int> x;
     vector<int> y;
     vector<int> cost;
-    
-    
-    Bipartite(int n, int m) : 
+
+
+    Bipartite(int n, int m) :
         n(n), m(0), adj(n), x(m), y(m), cost(m)
     {}
 
-    void emplace_back(int x, int y, int w) {
-        x[m] = x, t[m] = y;
-        adj[x].push_back(m);
-        w[m] = w;
+    void emplace_back(int s, int t, int c) {
+        x[m] = s, y[m] = t;
+        adj[s].push_back(m);
+        adj[s].push_back(m);
+        cost[m] = c;
         ++m;
     }
 
     int other(int e, int x) { return x == s[e] ? t[e] : s[e]; }
-    
+
 };
 
 vector<int> maxmatch(vector<vector<int>> adj, function<bool<int>> isleftv) {

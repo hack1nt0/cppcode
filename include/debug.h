@@ -21,6 +21,8 @@
 #include <unordered_set>
 #include <vector>
 #include <bitset>
+#include <bit>
+
 
 using namespace std;
 
@@ -49,6 +51,25 @@ template <typename T, typename V> void __print(const pair<T, V> &x) {
     __print(x.second);
     cerr << ')';
 }
+template <typename T1, typename T2> void __print(const tuple<T1, T2> &v) {
+    auto [x, y] = v;
+    cerr << '(' << x << ',' << y << ")";
+}
+template <typename T1, typename T2, typename T3> void __print(const tuple<T1, T2, T3> &v) {
+    auto [x, y, z] = v;
+    cerr << '(' << x << ',' << y << "," << z << ")";
+}
+template <typename T1, typename T2, typename T3, typename T4> void __print(const tuple<T1, T2, T3, T4> &v) {
+    auto [x, y, z, zz] = v;
+    cerr << '(' << x << ',' << y << "," << z << "," << zz << ")";
+}
+template <typename T, unsigned long N> void __print(const array<T, N> &xs) {
+    int f = 0;
+    cerr << '[';
+    for (const auto &x : xs)
+        cerr << (f++ ? "," : ""), __print(x);
+    cerr << ']';
+}
 template <typename T> void __print(const vector<T> &xs) {
     int f = 0;
     cerr << '[';
@@ -57,13 +78,6 @@ template <typename T> void __print(const vector<T> &xs) {
     cerr << ']';
 }
 template <typename T> void __print(const deque<T> &xs) {
-    int f = 0;
-    cerr << '[';
-    for (const auto &x : xs)
-        cerr << (f++ ? "," : ""), __print(x);
-    cerr << ']';
-}
-template <typename T, unsigned long N> void __print(const array<T, N> &xs) {
     int f = 0;
     cerr << '[';
     for (const auto &x : xs)
@@ -108,7 +122,7 @@ template <typename T, typename... V> void _print(T t, V... v) {
 }
 #define LOG(x...)                                                            \
     cerr << "[" << #x << "] = [";                                              \
-    _print(x)
+    _print(x);
 #else
 #define LOG(x...)
 #endif

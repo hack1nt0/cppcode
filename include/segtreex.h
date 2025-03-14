@@ -3,94 +3,151 @@
 
 #include "debug.h"
 
+#define L(x) ((x << 1) + 1)
+#define R(x) ((x << 1) + 2)
+#define M(l, r) (l + ((r - l) >> 1))
+
+#define DISJOIN(aL,aR,bL,bR) (aR <= bL || bR <= aL)
+#define CONTAIN(aL,aR,bL,bR) (aL <= bL && bR <= aR)
+
 /*
 Array based segtree, faster
 init: function<void(V&,int)> init,
 maintain: function<void(V&,V&,V&)> maintain, 
 pushdown: function<void(V&,V&,V&)> pushdown=[](V& v, V& l, V& r) {}
 */
-template <
-    typename V
-> struct SegTreeX {
-    vector<V> vs;
-    int n;
-    function<void(V&,const V&,const V&)> maintain;
-    function<void(const V&,V&,V&)> pushdown;
-    
-    SegTreeX(
-            int n,
-            function<void(V&,int)> init,
-            function<void(V&,const V&,const V&)> maintain,
-            function<void(const V&,V&,V&)> pushdown=[](const V& v, V& l, V& r) {}
-    ): vs(), maintain(maintain), pushdown(pushdown) {
-        this->n = 1;
-        while (this->n < n) this->n <<= 1;
-        vs.resize(this->n * 2);
-        assert(n);
-        function<void(int,int,int)> F = [&](int l, int r, int id) -> void {
-            if (l + 1 == r) {
-                // if (l >= n) vs[id] = V();
-                // else init(vs[id], l);
-                init(vs[id], l);
-            } else {
-                int mid = l + ((r - l) >> 1);
-                F(l, mid, L(id));
-                F(mid, r, R(id));
-                maintain(vs[id], vs[L(id)], vs[R(id)]);
-            }
-        };
-        F(0, this->n, 0);
-    }
 
-    inline int L(int x) { return (x << 1) + 1; }
-    inline int R(int x) { return (x << 1) + 2; }
-    inline bool overlay(int aL, int aR, int bL, int bR) { return !(aR <= bL || bR <= aL); }
-    inline bool contains(int aL, int aR, int bL, int bR) { return aL <= bL && bR <= aR; }
+template <typename V> 
+struct SegTreeX {
+    vector<V> val;
+    int n, nn;
+
+    SegTreeX(int n) {
+        assert(n);
+        this->n = n;
+        nn = 1;
+        while (nn < n) nn <<= 1;
+        nn *= 2;
+        val.resize(nn);
+    }
 
     template <class Vis>
     void visit(int l, int r, Vis vis) {
-        function<void(int,int,int,int,int)> F = [&](int ql, int qr, int l, int r, int id) {
-            if (!overlay(ql, qr, l, r))
+        auto F = [&](auto& self, int ql, int qr, int l, int r, int id) -> void {
+            if (DISJOIN(ql, qr, l, r))
                 return;
-            if (contains(ql, qr, l, r)) {
-                vis(vs[id]);
+            if (CONTAIN(ql, qr, l, r)) {
+                vis(val[id]);
             } else {
-                pushdown(vs[id], vs[L(id)], vs[R(id)]);
+                // pushdown(val[id], val[L(id)], val[R(id)]);
                 int mid = l + ((r - l) >> 1);
-                F(ql, qr, l, mid, L(id));
-                F(ql, qr, mid, r, R(id));
-                maintain(vs[id], vs[L(id)], vs[R(id)]);
+                self(self, ql, qr, l, mid, L(id));
+                self(self, ql, qr, mid, r, R(id));
+                val[id] = val[L(id)] + val[R(id)];
+                // maintain(val[id], val[L(id)], val[R(id)]);
             }
         };
-        F(l, r, 0, n, 0);
+        F(F, l, r, 0, n, 0);
+    }
+
+    virtual V query(int l, int r) {
+        V res;
+        visit(l, r, [&](V& x) { res = res + x; });
+        return res;
+    }
+    V query(int i) { return query(i, i + 1); }
+    V query() { return query(0, n); }
+
+    virtual void update(int i, const V& v) { 
+        visit(i, i + 1, [&](V& x) { x = v; });
+    }
+
+};
+
+template <typename V, typename ACC> 
+struct LazySegTreeX {
+    vector<V> val;
+    vector<ACC> acc;
+    int n, nn;
+
+    LazySegTreeX(int n) {
+        assert(n);
+        this->n = n;
+        nn = 1;
+        while (nn < n) nn <<= 1;
+        nn *= 2;
+        val.resize(nn);
+        acc.resize(nn);
+    }
+    
+    template <class Vis>
+    void visit(int l, int r, Vis vis) {
+        auto FF = [&](auto& self, int ql, int qr, int l, int r, int id) -> void {
+            if (DISJOIN(ql, qr, l, r))
+                return;
+            if (CONTAIN(ql, qr, l, r)) {
+                vis(id);
+            } else {
+                //pushdown
+                acc[L(id)] = acc[L(id)] + acc[id];
+                acc[R(id)] = acc[R(id)] + acc[id];
+                acc[id] = ACC();
+                //recursive
+                int mid = l + ((r - l) >> 1);
+                self(self, ql, qr, l, mid, L(id));
+                self(self, ql, qr, mid, r, R(id));
+                //maintain
+                val[id] = (val[L(id)] + acc[L(id)]) + (val[R(id)] + acc[R(id)]);
+            }
+        };
+        FF(FF, l, r, 0, n, 0);
+    }
+
+    V query(int l, int r) {
+        V res;
+        visit(l, r, [&](int i) { res = res + (val[i] + acc[i]); });
+        return res;
+    }
+
+    void update(int l, int r, const ACC& v) { 
+        visit(l, r, [&](int i) { acc[i] = acc[i] + v; });
     }
 };
 
 #ifdef DEBUG
-template <typename V>
-void __print(SegTreeX<V> &tree) {
-    cerr << "\ndigraph {\n";
+template <class T, class Vis>
+void print_segtree(const T& tree, Vis vis) {
+    cerr << "\ndigraph { ";
     vector<int> leafs;
     function<void(int,int,int)> F = [&](int l, int r, int id) {
-        cerr << "\t" << id << " [label=<" << tree.vs[id];
+        cerr << "\t" << id << " [label=<";
+        vis(id);
         cerr << "<BR/>[" << l+1 << "," << r << "]";
-        cerr << "<BR/>>]\n";
-        if (l + 1 <= r) {
+        cerr << "<BR/>>]; ";
+        if (l + 1 == r) {
             leafs.push_back(id);
         } else {
-            cerr << "\t" << id << " -> " << tree.L(id) << "\n";
-            cerr << "\t" << id << " -> " << tree.R(id) << "\n";
-            int mid = l + ((r - l) >> 1);
-            F(l, mid, tree.L(id));
-            F(mid, r, tree.R(id));
+            cerr << "\t" << id << " -> " << L(id) << "; ";
+            cerr << "\t" << id << " -> " << R(id) << "; ";
+            int mid = M(l, r);
+            F(l, mid, L(id));
+            F(mid, r, R(id));
         }
     };
     F(0, tree.n, 0);
-    cerr << "\t{rank=source;" << 0 << "}\n";
+    cerr << "\t{rank=source;" << 0 << "}; ";
     cerr << "\t{rank=sink;";
     for (auto x : leafs) if (x) cerr << x << ";";
+    cerr << "}; ";
     cerr << "}\n";
-    cerr << "}\n";
+}
+
+template <typename V> 
+void __print(const SegTreeX<V>& tree) { print_segtree(tree, [&](int i) { cerr << tree.val[i]; }); }
+
+template <typename V, typename ACC> 
+void __print(const LazySegTreeX<V, ACC>& tree) { 
+    print_segtree(tree, [&](int i) { cerr << "val: " << tree.val[i] << "<BR/>acc: " << tree.acc[i]; }); 
 }
 #endif
 

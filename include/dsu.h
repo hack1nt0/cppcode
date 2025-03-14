@@ -7,8 +7,9 @@
 struct DSU {
     vector<int> root;
     vector<int> rank;
+    vector<int> rootsize;
     int S;
-    DSU(int n): root(n), rank(n, 0), S(n) {
+    DSU(int n): root(n), rank(n, 0), rootsize(n, 1), S(n) {
         assert(n);
         iota(root.begin(), root.end(), 0);
     }
@@ -23,6 +24,8 @@ struct DSU {
             if (rank[fx] > rank[fy]) swap(fx, fy);
             root[fx] = fy;
             rank[fy] = max(rank[fx] + 1, rank[fy]);
+            rootsize[fy] += rootsize[fx];
+            rootsize[fx] = 0;
         }
     }
 
@@ -33,6 +36,8 @@ struct DSU {
     }
 
     int size() { return S; }
+    int size(int root) { return rootsize[root]; }
+    
 };
 
 #endif

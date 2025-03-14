@@ -1,0 +1,134 @@
+{
+  "name": "xtask",
+  "displayName": "xtask",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.97.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "xtask.helloWorld",
+        "key": "ctrl+shift+e",
+        "title": "Hello World",
+        "category": "XTask"
+      },
+      {
+        "command": "xtask.list",
+        "title": "List XTasks in stash",
+        "category": "XTask"
+      },
+      {
+        "command": "xtask.test",
+        "title": "Test",
+        "category": "XTask"
+      },
+      {
+        "command": "xtask.testpanel",
+        "title": "Test Panel",
+        "category": "XTask"
+      },
+      {
+        "command": "xtask.copy",
+        "title": "Copy",
+        "category": "XTask"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "xtask.list",
+        "key": "alt+l"
+      },
+      {
+        "command": "xtask.test",
+        "key": "alt+t"
+      },
+      {
+        "command": "xtask.testpanel",
+        "key": "shift+alt+t"
+      },
+      {
+        "command": "xtask.copy",
+        "key": "alt+c"
+      }
+    ],
+    "configuration": {
+      "title": "XTask",
+      "properties": {
+        "xtask": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "solver_template": {
+              "type": "string",
+              "default": "test_tools/templates/solver.cpp"
+            },
+            "jurger_template": {
+              "type": "string",
+              "default": "test_tools/templates/jurger.py"
+            },
+            "generator_template": {
+              "type": "string",
+              "default": "test_tools/templates/generator.py"
+            },
+            "build": {
+              "type": "string",
+              "default": "make all"
+            },
+            "run_manual": {
+              "type": "string",
+              "default": "./bin/X"
+            },
+            "run_tests": {
+              "type": "string",
+              "default": "python3 test_tools/run_tests.py ./bin/X"
+            },
+            "run_compare": {
+              "type": "string",
+              "default": "python3 test_tools/run_compare.py ./bin/X \"python3 X_generator.py\" ./bin/X_comparator"
+            },
+            "run_jurger": {
+              "type": "string",
+              "default": "python3 X_jurger.py ./bin/X"
+            },
+            "copy": {
+              "type": "string",
+              "default": "python3 test_tools/cppzip.py X.cpp"
+            }
+          },
+          "order": 20
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@types/pidusage": "^2.0.5",
+    "@types/vscode": "^1.97.0",
+    "@typescript-eslint/eslint-plugin": "^8.22.0",
+    "@typescript-eslint/parser": "^8.22.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "eslint": "^9.19.0",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "pidusage": "^4.0.0",
+    "sqlite3": "^5.1.7"
+  }
+}

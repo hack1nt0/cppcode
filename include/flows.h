@@ -7,11 +7,11 @@ struct ResidualGraph {
     vector<vi> adj;
     vi s, t, cap, rev, flow, cost;
     int n, m;
-    
-    ResidualGraph(int n) : 
+
+    ResidualGraph(int n) :
         adj(n), s(), t(), cap(), rev(), flow(), cost(), n(n), m(0)
     {}
-    
+
     void emplace_back(int S, int T, int CAP, int COST=0) {
         auto addedge = [&](int S, int T, int E, int REV, int CAP, int COST) {
             adj[S].push_back(E);
@@ -28,7 +28,7 @@ struct ResidualGraph {
     }
 
     int other(int e, int x) { return x == s[e] ? t[e] : s[e]; }
-    
+
 };
 
 int maxflow(ResidualGraph& g, int S, int T) {
@@ -86,14 +86,12 @@ int mincostflow(ResidualGraph& g, int S, int T, int FLOW) {
     int ret = 0;
     while (FLOW > 0) {
         vector<pii> dist(g.n, {INF, INF});
-        set<int> upds{S};
+        queue<int> que;
         dist[S] = {0, -INF};
+        que.push(S);
         vi pre(g.n);
-        while (upds.size()) {
-            int updsize = upds.size();
-            int minupd = *upds.begin();
-            int maxupd = *upds.rbegin();
-            int x = *upds.begin();
+        while (que.size()) {
+            int x = que.front(); que.pop();
             for (int e: g.adj[x]) {
                 int y = g.other(e, x);
                 if (!(g.cap[e] - g.flow[e] > 0)) continue;
@@ -101,12 +99,12 @@ int mincostflow(ResidualGraph& g, int S, int T, int FLOW) {
                 if (disty < dist[y]) {
                     dist[y] = disty;
                     pre[y] = e;
-                    upds.insert(y);
+                    que.push(y);
                 }
             }
-            if (upds.size() == updsize && *upds.begin() == minupd && *upds.rbegin() == maxupd) break;
         }
         if (dist[T].first == INF) break;
+        LOG(dist[T])
         int flowdel = min(FLOW, -dist[T].second);
         ret += dist[T].first * flowdel;
         FLOW -= flowdel;

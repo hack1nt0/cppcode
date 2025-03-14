@@ -4,6 +4,13 @@
 #include "debug.h"
 
 template <typename T>
+struct Matrix {
+    
+};
+
+
+
+template <typename T>
 struct Tensor {
     using val = Tensor<T>;
     using ref = const Tensor<T>&;

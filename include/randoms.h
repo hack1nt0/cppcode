@@ -2,8 +2,6 @@
 #define INCLUDED_RANDVAL_H
 
 #include "debug.h"
-#include "geometry.h"
-
 
 struct Random {
     mt19937 gen;
@@ -115,55 +113,55 @@ struct Random {
     }
 
 
-    /* Random Polygon (maybe not convex, i.e., concave/\*-sharpe */
-    template<typename T> vector<PT> randpoly(int n, T xl, T xr, T yl, T yr) {
-        assert(n >= 3);
-        vector<PT> pts(n);
-        vector<int> ord(n+1);
-        bool collinear = true;
-        bool intersect = true;
+    // /* Random Polygon (maybe not convex, i.e., concave/\*-sharpe */
+    // template<typename T> vector<PT> randpoly(int n, T xl, T xr, T yl, T yr) {
+    //     assert(n >= 3);
+    //     vector<PT> pts(n);
+    //     vector<int> ord(n+1);
+    //     bool collinear = true;
+    //     bool intersect = true;
 
-        int its = 0;
-        while (collinear || intersect) {
-            LOG(its++, collinear, intersect);
-            if (!collinear && n == 3) break;
-            if (collinear) {
-                collinear = false;
-                for (int i = 0; i < n; ++i) pts[i] = {randint(xl,xr), randint(yl,yr)};
-                iota(ord.begin(), ord.begin() + n, 0);
-                shuffle(ord.begin(), ord.begin() + n, this->gen); ord[n] = ord[0];
-            }
+    //     int its = 0;
+    //     while (collinear || intersect) {
+    //         LOG(its++, collinear, intersect);
+    //         if (!collinear && n == 3) break;
+    //         if (collinear) {
+    //             collinear = false;
+    //             for (int i = 0; i < n; ++i) pts[i] = {randint(xl,xr), randint(yl,yr)};
+    //             iota(ord.begin(), ord.begin() + n, 0);
+    //             shuffle(ord.begin(), ord.begin() + n, this->gen); ord[n] = ord[0];
+    //         }
             
-            vector<PT> pts2(n);
-            for (int i = 0; i < n; ++i) pts2[i] = pts[ord[i]];
-            PLT(pts2);
-            intersect = false;
-            for (int i = 0; i < n; ++i) {
-                LSEG li(pts[ord[i]], pts[ord[i + 1]]);
-                for (int j = i + 2; j < n; ++j) {
-                    LSEG lj(pts[ord[j]], pts[ord[j + 1]]);
-                    auto ints = li & lj;
-                    if (!ints.size()) continue;
-                    if (ints.size() == 2) {
-                        collinear = true;
-                        break;
-                    }
-                    else {
-                        reverse(ord.begin() + i + 1, ord.begin() + j + 1);
-                        ord[n] = ord[0];
-                        intersect = true;
-                        break;
-                    }
-                }
-                if (collinear || intersect) break;
-            }
-        }
-        LOG(its);
-        assert(ord[0] == ord[n]);
-        vector<PT> res(n);
-        for (int i = 0; i < n; ++i) res[i] = pts[ord[i]];
-        return res;
-    }
+    //         vector<PT> pts2(n);
+    //         for (int i = 0; i < n; ++i) pts2[i] = pts[ord[i]];
+    //         PLT(pts2);
+    //         intersect = false;
+    //         for (int i = 0; i < n; ++i) {
+    //             LSEG li(pts[ord[i]], pts[ord[i + 1]]);
+    //             for (int j = i + 2; j < n; ++j) {
+    //                 LSEG lj(pts[ord[j]], pts[ord[j + 1]]);
+    //                 auto ints = li & lj;
+    //                 if (!ints.size()) continue;
+    //                 if (ints.size() == 2) {
+    //                     collinear = true;
+    //                     break;
+    //                 }
+    //                 else {
+    //                     reverse(ord.begin() + i + 1, ord.begin() + j + 1);
+    //                     ord[n] = ord[0];
+    //                     intersect = true;
+    //                     break;
+    //                 }
+    //             }
+    //             if (collinear || intersect) break;
+    //         }
+    //     }
+    //     LOG(its);
+    //     assert(ord[0] == ord[n]);
+    //     vector<PT> res(n);
+    //     for (int i = 0; i < n; ++i) res[i] = pts[ord[i]];
+    //     return res;
+    // }
     
     
 };

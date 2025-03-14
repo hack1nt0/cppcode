@@ -8,17 +8,25 @@ struct Tensor: public vector<Tensor<T, D-1>> {
     static_assert(D >= 2, "Dimension must be >= 2");
     array<int, D> dims;
     template <typename... Args>
-    Tensor(int n, Args... args) : dims{n, args...}, vector<Tensor<T, D-1>>(n, Tensor<T, D-1>(args...)) { assert(n); }
+    Tensor(int n, Args... args) : vector<Tensor<T, D-1>>(n, Tensor<T, D-1>(args...)), dims{n, args...} { assert(n); }
     void operator=(T v) { for (auto& x: *this) x = v; }
 };
- 
+
 
 template <typename T>
 struct Tensor<T, 1> : public vector<T> {
     array<int, 1> dims;
-    Tensor(int n) : dims{n}, std::vector<T>(n) { assert(n); }
+    Tensor(int n) : std::vector<T>(n), dims{n} { assert(n); }
     void operator=(T v) { for (auto& x: *this) x = v; }
 };
+
+
+template <class T, int D1, int D2>
+using arr2d = array<array<T, D2>, D1>;
+
+template <class T, int D1, int D2, int D3>
+using arr3d = array<array<array<T, D3>, D2>, D1>;
+
 
 #ifdef DEBUG
     template<typename T>

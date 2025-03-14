@@ -1,7 +1,15 @@
 build/
+bin/
 dist/
 *.egg-info/
 __pycache__/
 .ipynb_checkpoints/
 *.exe
 .venv
+.DS_Store
+node_modules/
+out/out
+dist
+node_modules
+.vscode-test/
+*.vsix

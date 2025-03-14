@@ -8,13 +8,13 @@
  */
 struct TwoSat: private Scc {
     
-    TwoSat(int n): Scc(n * 2), n(n), _truth(n) {}
+    TwoSat(int n): Scc(n * 2 + 1), n(n), _truth(n) {}
 
     int encode(int u) const {
         return u < 0 ? (-u - 1) * 2 + 1 : (u - 1) * 2;
     }
 
-    void addClause(int x, int y) {
+    void add_clause(int x, int y) {
         assert(-n <= x && x <= n && x);
         assert(-n <= y && y <= n && y);
         addEdge(encode(-x), encode(y));

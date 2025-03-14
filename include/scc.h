@@ -1,7 +1,7 @@
 #ifndef INCLUDED_SCC_H
 #define INCLUDED_SCC_H
 
-#include "ycomb.h"
+#include "debug.h"
 
 struct Scc {
     int n;
@@ -20,7 +20,7 @@ struct Scc {
         int nodeN = 0;
         int sccN = 0;
         stack<int> stk;
-        auto dfs = y_combinator([&](auto dfs, int u) -> void {
+        function<void(int)> dfs = [&](int u) -> void {
             preorder[u] = lowest[u] = nodeN++;
             stk.push(u);
             for (auto v: adj[u])
@@ -39,7 +39,7 @@ struct Scc {
                 }
                 sccN++;
             }
-        });
+        };
         for (int i = 0; i < n; ++i) if (preorder[i] == -1) {
             dfs(i);
         }

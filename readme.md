@@ -7,12 +7,23 @@ case analysis.
    1. if S = abab...aba, Answer is No
    2. if S = AbA, Answer is None
    3. Else, Answer is Yes, and $P_1$ = Aba, left is $P_2$
-   4. 
+   4.
 <table>
     <tr><th>P: lowest p where $A_p != A_1$</th><th>Second part is palindrome?</th></tr>
     <tr><td>2</td><td>YES</td></tr>
 </table>
 
 
-![alt text](data/Tree.gv.png "PNG")
-![alt text](data/Tree.gv.svg "SVG")
+<!-- ![alt text](data/Tree.gv.png "PNG")
+![alt text](data/Tree.gv.svg "SVG") -->
+
+<!-- <a href="https://codeforces.com/contest/2067/problem/F">2067F - Bitwise Slides</a> -->
+
+[2067F - Bitwise Slides](https://codeforces.com/contest/2067/problem/F)
+
+key observation: a $xor$ a = 0
+
+f[i-1,x]: total of status of (x, x, $pref_{i-1}$), i.e. at least two of them are equal
+
+f[i,x] = f[i-1, x] + f[i-1, $pref_{i}$]
+f[i, $pref_i$] = f[i - 1, $pref_i$]

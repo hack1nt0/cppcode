@@ -37,7 +37,7 @@ struct Lca {
             if (!is_ancestor(up[u][i], v))
                 u = up[u][i];
         }
-        return up[u][0];
+        return up[u][0]; //move top one
     }
 
 };
@@ -46,4 +46,3 @@ struct Lca {
 #endif
 
 #endif
-

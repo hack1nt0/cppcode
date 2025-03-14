@@ -71,57 +71,57 @@ vector<double> operator*(const vector<double>& lhs, const vector<double>& rhs) {
 /**
  * ntt, todo
  */
-template <auto MOD>
-vector<ModInt<MOD>> operator*(const vector<ModInt<MOD>>& lhs, const vector<ModInt<MOD>>& rhs) {
-    using T = ModInt<MOD>;
-    using V = valarray<T>;
-    int n = lhs.size();
-    int m = rhs.size();
-    assert(n > 1 && m > 1);
-    int N = 1;
-    while (N < n + m - 1) N <<= 1;
-    V A = lhs; A.resize(N);
-    V B = rhs; B.resize(N);
-    T root_1, root, root_pw;
-    bool inverse = false;
-    auto ntt = [&](V& p) -> V {
-        // Bit-reversed addressing permutation
-        for (size_t i = 1, j = 0; i < N; ++i) {
-            size_t bit = N >> 1;
-            while (j & bit) {
-                j ^= bit;
-                bit >>= 1;
-            }
-            j ^= bit;
-            if (i < j) {
-                swap(p[i], p[j]);
-            }
-        }
-        // Iterative FFT
-        for (size_t len = 2; len <= N; len <<= 1) {
-            T wlen = inverse ? root_1 : root;
-            for (int i = len; i < root_pw; i <<= 1)
-                wlen = wlen * wlen;
-            for (size_t i = 0; i < N; i += len) {
-                T w = 1;
-                for (size_t j = 0; j < len / 2; ++j) {
-                    T u = p[i + j];
-                    T v = p[i + j + len / 2] * w;
-                    p[i + j] = u + v;
-                    p[i + j + len / 2] = u - v;
-                    w *= wlen;
-                }
-            }
-        }
-        if (inverse) p /= N;
-    };
-    fft(A);
-    fft(B);
-    V Z = A * B;
-    inverse = true;
-    fft(Z);
-    Z.resize(n + m - 1);
-    return Z;
-}
+// template <auto MOD>
+// vector<ModInt<MOD>> operator*(const vector<ModInt<MOD>>& lhs, const vector<ModInt<MOD>>& rhs) {
+//     using T = ModInt<MOD>;
+//     using V = valarray<T>;
+//     int n = lhs.size();
+//     int m = rhs.size();
+//     assert(n > 1 && m > 1);
+//     int N = 1;
+//     while (N < n + m - 1) N <<= 1;
+//     V A = lhs; A.resize(N);
+//     V B = rhs; B.resize(N);
+//     T root_1, root, root_pw;
+//     bool inverse = false;
+//     auto ntt = [&](V& p) -> V {
+//         // Bit-reversed addressing permutation
+//         for (size_t i = 1, j = 0; i < N; ++i) {
+//             size_t bit = N >> 1;
+//             while (j & bit) {
+//                 j ^= bit;
+//                 bit >>= 1;
+//             }
+//             j ^= bit;
+//             if (i < j) {
+//                 swap(p[i], p[j]);
+//             }
+//         }
+//         // Iterative FFT
+//         for (size_t len = 2; len <= N; len <<= 1) {
+//             T wlen = inverse ? root_1 : root;
+//             for (int i = len; i < root_pw; i <<= 1)
+//                 wlen = wlen * wlen;
+//             for (size_t i = 0; i < N; i += len) {
+//                 T w = 1;
+//                 for (size_t j = 0; j < len / 2; ++j) {
+//                     T u = p[i + j];
+//                     T v = p[i + j + len / 2] * w;
+//                     p[i + j] = u + v;
+//                     p[i + j + len / 2] = u - v;
+//                     w *= wlen;
+//                 }
+//             }
+//         }
+//         if (inverse) p /= N;
+//     };
+//     fft(A);
+//     fft(B);
+//     V Z = A * B;
+//     inverse = true;
+//     fft(Z);
+//     Z.resize(n + m - 1);
+//     return Z;
+// }
 #endif
 

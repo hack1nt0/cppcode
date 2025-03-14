@@ -1,170 +1,198 @@
 #ifndef INCLUDED_BST_H
 #define INCLUDED_BST_H
 #include "debug.h"
-#include <cassert>
-#include <functional>
-#include <iostream>
-#include <unordered_map>
-#include <vector>
 
 /*
-    struct Node {
-        Node *chds[2];
-        void maintain();
-        Node(): chds({nullptr, nullptr}) {}
-    }
+    0 is null node
+    erase is lazy: just set count = 0
 */
-template <typename T> struct BaseBst {
-    T *dummy, *root;
-    BaseBst() : dummy(new T()), root(dummy) {}
+template <typename T> struct Bst {
+    vector<T> val;
+    vector<int> l;
+    vector<int> r;
+    vector<int> h;
+    vector<int> s; //size of subtree
+    vector<int> c; //count of element
+    int root = 0;
 
-    // T *rotate(T *root, int c = 2) { return root; }
+    Bst() : val(1), l(1), r(1), h(1), s(1), c(1) {}
 
-    T *rotate(T *root, int c = 2) {
-        int hl = root->chd[0]->height, hr = root->chd[1]->height;
-        if (hl == hr || c == 0 || abs(hl - hr) < c)
-            return root;
-        T *ret;
-        if (hl > hr) {
-            if (root->chd[0]->chd[0]->height < root->chd[0]->chd[1]->height)
-                root->chd[0] = this->rotate(root->chd[0], c - 1);
-            ret = root->chd[0];
-            T *tmp = root->chd[0]->chd[1];
-            ret->chd[1] = root;
-            ret->chd[1]->chd[0] = tmp;
-        } else {
-            if (root->chd[1]->chd[0]->height > root->chd[1]->chd[1]->height)
-                root->chd[1] = this->rotate(root->chd[1], c - 1);
-            ret = root->chd[1];
-            T *tmp = root->chd[1]->chd[0];
-            ret->chd[0] = root;
-            ret->chd[0]->chd[1] = tmp;
-        }
-        return ret;
+    int size() const { return s[root]; }
+
+    void maintain(int x) {
+        s[x] = c[x] + s[l[x]] + s[r[x]];
+        h[x] = max(h[l[x]], h[r[x]]) + 1;
     }
 
-    void insert(const T &v) { root = insert(v, root); }
+    T* end() { return &val[0]; }
 
-    T *insert(const T &val, T *root) {
-        T *ret;
-        if (root == dummy) {
-            ret = new T(val); //TODO
-            // cerr << val.val << " == " << val.sum << endl;
-            // *ret = val;
-            ret->chd[0] = dummy;
-            ret->chd[1] = dummy;
-            ret->count = 1;
-            ret->height = 1;
-            ret->maintain();
-        } else {
-            ret = root;
-            int cmp = val <=> *ret;
+    T* find(const T& v) {
+        function<int(int)> F = [&](int x) {
+            if (!x) return x;
+            int cmp = _cmp(v, val[x]);
+            if (cmp == 0) return c[x] ? x : 0;
+            if (cmp <  0) return F(l[x]);
+            return F(r[x]);
+        };
+        return &val[F(root)];
+    }
+
+    // @unfinished
+    T* lower_bound(const T& v) {
+        auto find_smallest = [&](int x) -> int {
+            int res = x;
+            while (l[x]) x = l[x], res = x;
+            return res;
+        };
+        auto dfs = [&](auto& self, int x) -> int {
+            if (!x) return x;
+            int cmp = _cmp(v, val[x]);
+            if (cmp == 0) return c[x] ? x : find_smallest(r[x]);
+            if (cmp <  0) {
+                int res = self(self, l[x]);
+                return !res && c[x] ? x : res;
+            }
+            return self(self, r[x]);
+        };
+        return &val[dfs(dfs, root)];
+    }
+
+    T* upper_bound(const T& v) {
+
+    }
+
+    int order_of_key(const T& v) {
+        int ord = 0;
+        function<int(int)> F = [&](int x) {
+            if (!x) return ord;
+            int cmp = _cmp(v, val[x]);
+            if (cmp < 0) return F(l[x]);
+            ord += s[l[x]];
+            if (cmp == 0) return ord;
+            ord += c[x];
+            return F(r[x]);
+        };
+        return F(root);
+    }
+
+    const T* find_by_order(int ord) const {
+        assert(ord >= 0);
+        function<int(int)> F = [&](int x) {
+            if (!x) return x;
+            if (s[l[x]] > ord) return F(l[x]);
+            ord -= s[l[x]];
+            if (c[x] > ord) return x;
+            ord -= c[x];
+            return F(r[x]);
+        };
+        return &val[F(root)];
+    }
+
+    void insert(const T& v) {
+        function<int(int)> F = [&](int x) {
+            if (!x) {
+                val.push_back(v);
+                l.push_back(0);
+                r.push_back(0);
+                s.push_back(1);
+                h.push_back(0);
+                c.push_back(1);
+                return int(val.size() - 1);
+            }
+            int cmp = _cmp(v, val[x]);
             if (cmp == 0) {
-                ret->count++;
+                ++c[x];
             } else if (cmp < 0) {
-                ret->chd[0] = this->insert(val, ret->chd[0]);
+                l[x] = F(l[x]);
             } else {
-                ret->chd[1] = this->insert(val, ret->chd[1]);
+                r[x] = F(r[x]);
             }
-            ret->maintain();
-            ret = this->rotate(ret);
-            for (auto ptr : {ret->chd[0], ret->chd[1], ret})
-                if (ptr != dummy) {
-                    assert(ptr->chd[0] != nullptr && ptr->chd[1] != nullptr);
-                    ptr->height = max(ptr->chd[0]->height, ptr->chd[1]->height) + 1;
-                    ptr->maintain();
-                }
-        }
-        return ret;
+            maintain(x);
+            return rotate(x);
+        };
+        root = F(root);
     }
 
-    void erase(const T &node) { root = erase(node, root); }
-
-    T *erase(const T &val, T *root) {
-        if (root == dummy) {
-            return root;
-        }
-        T *ret = root;
-        int cmp = val <=> *root;
-        if (cmp == 0) {
-            root->count--;
-            if (root->count > 0) {
-                ret = root;
-            } else if (root->chd[0] == dummy) {
-                ret = root->chd[1];
-                delete root;
-            } else if (root->chd[0]->chd[1] == dummy) {
-                ret = root->chd[0];
-                ret->chd[1] = root->chd[1];
-                delete root;
-            } else {
-                ret = root->chd[0];
-                while (ret->chd[1] != dummy)
-                    ret = ret->chd[1];
-                ret = ret->fa;
-                ret->fa->chd[1] = dummy;
-                ret->chd[0] = root->chd[0];
-                ret->chd[1] = root->chd[1];
-                delete root;
+    void erase(const T &v) {
+        function<int(int)> F = [&](int x) {
+            // LOG(x, c[x], v);
+            if (!x) return x;
+            int cmp = _cmp(v, val[x]);
+            if (cmp == 0) {
+                c[x] = max(0, c[x] - 1);
+            } else if (cmp < 0) {
+                l[x] = F(l[x]);
+            } else if (cmp > 0) {
+                r[x] = F(r[x]);
             }
-        } else if (cmp < 0) {
-            root->chd[0] = this->erase(val, root->chd[0]);
-            root->chd[0]->fa = root;
+            maintain(x);
+            return x;
+        };
+        root = F(root);
+    }
+
+    int rotate(int x) {
+        assert(x);
+        int hl = h[l[x]], hr = h[r[x]];
+        if (abs(hl - hr) <= 1) return x;
+        int y; //pivot
+        int z; //split
+        if (hl < hr) {
+            y = r[x];
+            z = l[y];
+            l[y] = x;
+            r[x] = z;
         } else {
-            root->chd[1] = this->erase(val, root->chd[0]);
-            root->chd[1]->fa = root;
+            y = l[x];
+            z = r[y];
+            r[y] = x;
+            l[x] = z;
         }
-        ret = this->rotate(ret);
-        ret->maintain();
-        return ret;
+        maintain(x);
+        maintain(y);
+        return y;
     }
 
-    void traverse(const function<bool(const T &root)> &preOrder,
-                  const function<bool(const T &root)> &midOrder,
-                  const function<void(const T &root)> &postOrder,
-                  T *root = nullptr) const {
-        if (root == nullptr) {
-            root = this->root;
+    int _cmp(const T& a, const T& b) {
+        return a < b ? -1 : (b < a ? 1 : 0);
+    }
+
+    void dfs(
+        function<void(int)> before,
+        function<void(int)> middle,
+        function<void(int)> after
+    ) const {
+        function<void(int)> F = [&](int x) {
+            if (!x) return;
+            if (c[x]) before(x);
+            F(l[x]);
+            if (c[x]) middle(x);
+            F(r[x]);
+            if (c[x]) after(x);
+        };
+        F(root);
+    }
+
+    template <class S>
+    bool operator==(const S& o) {
+        if (size() != o.size()) return false;
+        vector<int> idx;
+        dfs([](int x) {}, [&](int x) { idx.push_back(x); }, [](int x) {});
+        auto it2 = o.begin();
+        for (auto i: idx) {
+            if (val[i] != *it2) return false;
+            ++it2;
         }
-        if (root == dummy)
-            return;
-        if (!preOrder(*root)) return;
-        traverse(preOrder, midOrder, postOrder, root->chd[0]);
-        if (!midOrder(*root)) return;
-        traverse(preOrder, midOrder, postOrder, root->chd[1]);
-        postOrder(*root);
+        return true;
     }
 
-#ifdef DEBUG
-
-    void dot() {
-        cerr << "\ndigraph {\n";
-        if (root != dummy) {
-            int idx = 1;
-            idx = _dot(root, idx);
-            cerr << "{rank=source;" << idx << "}\n";
-        }
-        cerr << "}\n";
-    }
-
-    int _dot(T *root, int &idx) {
-        if (root == dummy)
-            return 0;
-        int c, l, r;
-        c = l = r = 0;
-        l = _dot(root->chd[0], idx);
-        c = idx++;
-        cerr << '\t' << c << " [label=<" << *root << "<BR/>"
-             << "height=" << root->height << "<BR/>"
-             << ">]\n";
-        r = _dot(root->chd[1], idx);
-        if (l)
-            cerr << '\t' << c << " -> " << l << "\n";
-        if (r)
-            cerr << '\t' << c << " -> " << r << "\n";
-        return c;
-    }
-#endif
 };
+#ifdef DEBUG
+template <typename T> void __print(const Bst<T>& o) {
+    cerr << "(";
+    for (int i = 0; i < o.size(); ++i) cerr << *o.find_by_order(i) << ",";
+    cerr << ")";
+}
+#endif
 
 #endif
